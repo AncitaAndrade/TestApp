@@ -136,5 +136,11 @@
       <Project>{E2B448DB-8612-49B8-806F-356D4ACD715A}</Project>
       <Name>TestApp</Name>
     </ProjectReference>
+    <ProjectReference Include="C:\Users\z0043fvy\source\repos\VoiceBasedApp\VoiceBasedApp\VoiceBasedApp.iOS\VoiceBasedApp.iOS.csproj">
+      <Project>{d0241a12-1d38-4de4-aaaa-f43844c73ea4}</Project>
+      <Name>VoiceBasedApp.iOS</Name>
+      <IsAppExtension>false</IsAppExtension>
+      <IsWatchApp>false</IsWatchApp>
+    </ProjectReference>
   </ItemGroup>
 </Project>
