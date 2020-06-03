@@ -19,6 +19,7 @@ namespace TestApp
     public partial class MainPage : ContentPage
     {
         private ISpeechToTextService _speechRecongnitionService;
+        private bool isPermissionGranted;
 
         public MainPage()
         {
@@ -27,7 +28,8 @@ namespace TestApp
             {
                 _speechRecongnitionService = DependencyService.Get<ISpeechToTextService>();
                 MyButton.ImageSource = ImageSource.FromResource("TestApp.Images.mic.png");
-                SpeakInitialInstruction();
+               
+                CheckPermissionStatus();
             }
             catch (Exception ex)
             {
@@ -47,35 +49,13 @@ namespace TestApp
             });
         }
 
-        private void SpeakInitialInstruction()
+        private async void CheckPermissionStatus()
         {
-            TextToSpeech.SpeakAsync("To Speak Press and Hold the microphone Image. Release when done!");
-        }
-
-        private void SpeechToTextFinalResultRecieved(string args)
-        {
-            recon.Text = args;
-        }
-
-        private async Task<bool> GetPermissionStatusAsync()
-        {
-            var permissionStatus = await CrossPermissions.Current.CheckPermissionStatusAsync(Permission.Microphone);
-            if (PermissionStatus.Granted == permissionStatus)
+           var status=await CrossPermissions.Current.CheckPermissionStatusAsync(Permission.Microphone);
+            if (status == PermissionStatus.Granted)
             {
-                return true;
-            }
-            return false;
-        }
-
-        private async void MyButton_Pressed(object sender, EventArgs e)
-        {
-            var canProceed = await GetPermissionStatusAsync();
-
-            if (canProceed)
-            {
-                MyButton.ImageSource = ImageSource.FromResource("TestApp.Images.MicrophoneOnMute.png");
-                _speechRecongnitionService.StartSpeechToText();
-
+                isPermissionGranted = true;
+                await SpeakInitialInstructionAsync();
             }
             else
             {
@@ -84,9 +64,34 @@ namespace TestApp
                     await DisplayAlert("Need Mic", "Need Microphone Access", "OK");
                 }
 
-                var status = await CrossPermissions.Current.RequestPermissionAsync<MicrophonePermission>();
-                if (status == PermissionStatus.Granted)
-                    MyButton_Pressed(sender, e);
+                var permissionStatus = await CrossPermissions.Current.RequestPermissionAsync<MicrophonePermission>();
+                if (permissionStatus == PermissionStatus.Granted)
+                {
+                    isPermissionGranted = true;
+                    await SpeakInitialInstructionAsync();
+                }
+            }
+                
+
+        }
+
+        private async Task SpeakInitialInstructionAsync()
+        {
+            await TextToSpeech.SpeakAsync("To Speak Press and Hold the microphone Image. Release when done!");
+        }
+
+        private void SpeechToTextFinalResultRecieved(string args)
+        {
+            recon.Text = args;
+        }
+
+        private async void MyButton_Pressed(object sender, EventArgs e)
+        {
+            if (isPermissionGranted)
+            {
+                MyButton.ImageSource = ImageSource.FromResource("TestApp.Images.MicrophoneOnMute.png");
+                _speechRecongnitionService.StartSpeechToText();
+
             }
         }
 
